@@ -128,7 +128,10 @@
             // Simulate checking connection and user's access pattern (e.g., rate limiting or IP blocking)
             const suspiciousIP = ['malicious_ip_here']; // List of malicious IPs (to be managed on server-side)
             if (suspiciousIP.includes(userIP)) {
-                document.body.innerHTML = "<div class='blocked'>Your IP has been blocked due to suspicious activity.</div>";
+                const blockedMessage = document.createElement("div");
+                blockedMessage.className = "blocked";
+                blockedMessage.textContent = "Your IP has been blocked due to suspicious activity.";
+                document.body.replaceChildren(blockedMessage);
                 return; // Stop further execution for malicious users
             }
 

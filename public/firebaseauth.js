@@ -22,7 +22,7 @@ const db = getFirestore();
 function showMessage(message, divId) {
   const messageDiv = document.getElementById(divId);
   messageDiv.style.display = "block";
-  messageDiv.innerHTML = message;
+  messageDiv.textContent = message;
   messageDiv.style.opacity = 1;
   setTimeout(() => {
     messageDiv.style.opacity = 0;

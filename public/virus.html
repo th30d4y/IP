@@ -100,7 +100,7 @@
                 const virusData = await virusResponse.json();
                 console.log('Data received:', virusData);
 
-                resultDiv.innerHTML = ''; // Clear previous results
+                resultDiv.textContent = ""; // Clear previous results
 
                 const title = document.createElement('h3');
                 title.textContent = `Results for IP: ${ip}`;
@@ -110,34 +110,25 @@
                 virusHeader.textContent = 'VirusTotal';
                 resultDiv.appendChild(virusHeader);
 
-                const reputationP = document.createElement('p');
-                reputationP.innerHTML = '<b>Reputation:</b> ';
-                reputationP.appendChild(document.createTextNode(virusData.data?.attributes?.reputation || 'N/A'));
-                resultDiv.appendChild(reputationP);
+                const addLabeledValue = (label, value) => {
+                    const p = document.createElement("p");
+                    const strong = document.createElement("b");
+                    strong.textContent = `${label}: `;
+                    p.appendChild(strong);
+                    p.appendChild(document.createTextNode(value ?? "N/A"));
+                    resultDiv.appendChild(p);
+                };
 
-                const networkP = document.createElement('p');
-                networkP.innerHTML = '<b>Network:</b> ';
-                networkP.appendChild(document.createTextNode(virusData.data?.attributes?.network || 'N/A'));
-                resultDiv.appendChild(networkP);
-
-                const statsP = document.createElement('p');
-                statsP.innerHTML = '<b>Last Analysis Stats:</b> ';
-                statsP.appendChild(document.createTextNode(
+                addLabeledValue("Reputation", String(virusData.data?.attributes?.reputation ?? "N/A"));
+                addLabeledValue("Network", virusData.data?.attributes?.network ?? "N/A");
+                addLabeledValue(
+                    "Last Analysis Stats",
                     virusData.data?.attributes?.last_analysis_stats
                         ? JSON.stringify(virusData.data.attributes.last_analysis_stats)
-                        : 'N/A'
-                ));
-                resultDiv.appendChild(statsP);
-
-                const tagsP = document.createElement('p');
-                tagsP.innerHTML = '<b>Tags:</b> ';
-                tagsP.appendChild(document.createTextNode(virusData.data?.attributes?.tags?.join(", ") || 'N/A'));
-                resultDiv.appendChild(tagsP);
-
-                const whoisP = document.createElement('p');
-                whoisP.innerHTML = '<b>Whois:</b> ';
-                whoisP.appendChild(document.createTextNode(virusData.data?.attributes?.whois || 'N/A'));
-                resultDiv.appendChild(whoisP);
+                        : "N/A"
+                );
+                addLabeledValue("Tags", virusData.data?.attributes?.tags?.join(", ") ?? "N/A");
+                addLabeledValue("Whois", virusData.data?.attributes?.whois ?? "N/A");
             } catch (error) {
                 console.error('Fetch error:', error);
                 resultDiv.textContent = 'Network error: ' + error.message;
