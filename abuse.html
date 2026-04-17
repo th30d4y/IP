@@ -38,37 +38,95 @@
 <body>
     <h1>IP Reputation Checker - AbuseIPDB</h1>
     <input type="text" id="ipInput" placeholder="Enter IP Address">
-    <button onclick="checkAbuseIPDB()">Check AbuseIPDB</button>
+    <button type="button" id="checkAbuseBtn">Check AbuseIPDB</button>
     <div class="result" id="result"></div>
 
     <script>
+        // IP address validation regex
+        const ipv4Regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+        const ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4})$/;
+
+        function isValidIP(ip) {
+            return ipv4Regex.test(ip) || ipv6Regex.test(ip);
+        }
+
+        document.getElementById("checkAbuseBtn").addEventListener("click", checkAbuseIPDB);
+        document.getElementById("ipInput").addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                checkAbuseIPDB();
+            }
+        });
+
         async function checkAbuseIPDB() {
             const ip = document.getElementById("ipInput").value.trim();
             const resultDiv = document.getElementById("result");
 
+            // Client-side validation
             if (!ip) {
-                resultDiv.innerHTML = "<p>Please enter a valid IP address.</p>";
+                resultDiv.textContent = "Please enter an IP address.";
                 return;
             }
 
-            resultDiv.innerHTML = "<p>Checking AbuseIPDB...</p>";
+            if (!isValidIP(ip)) {
+                resultDiv.textContent = "Invalid IP address format. Please enter a valid IPv4 or IPv6 address.";
+                return;
+            }
+
+            if (ip.length > 45) {
+                resultDiv.textContent = "IP address is too long.";
+                return;
+            }
+
+            resultDiv.textContent = "Checking AbuseIPDB...";
 
             try {
-                const abuseResponse = await fetch(`/api/abuseipdb?ip=${ip}`);
+                const abuseResponse = await fetch(`/api/abuseipdb?ip=${encodeURIComponent(ip)}`);
+                
+                if (!abuseResponse.ok) {
+                    const errorData = await abuseResponse.json();
+                    resultDiv.textContent = errorData.error || "Error fetching data from AbuseIPDB.";
+                    return;
+                }
+
                 const abuseData = await abuseResponse.json();
 
-                resultDiv.innerHTML = `
-                    <h3>Results for IP: ${ip}</h3>
-                    <h4>AbuseIPDB</h4>
-                    <p><b>Abuse Confidence Score:</b> ${abuseData.data?.abuseConfidenceScore || "N/A"}</p>
-                    <p><b>Categories:</b> ${abuseData.data?.category?.join(", ") || "N/A"}</p>
-                    <p><b>Country:</b> ${abuseData.data?.countryCode || "N/A"}</p>
-                    <p><b>ISP:</b> ${abuseData.data?.isp || "N/A"}</p>
-                    <p><b>Domain:</b> ${abuseData.data?.domain || "N/A"}</p>
-                `;
+                resultDiv.innerHTML = ''; // Clear previous results
+
+                const title = document.createElement('h3');
+                title.textContent = `Results for IP: ${ip}`;
+                resultDiv.appendChild(title);
+
+                const abuseHeader = document.createElement('h4');
+                abuseHeader.textContent = 'AbuseIPDB';
+                resultDiv.appendChild(abuseHeader);
+
+                const scoreP = document.createElement('p');
+                scoreP.innerHTML = '<b>Abuse Confidence Score:</b> ';
+                scoreP.appendChild(document.createTextNode(abuseData.data?.abuseConfidenceScore || 'N/A'));
+                resultDiv.appendChild(scoreP);
+
+                const categoriesP = document.createElement('p');
+                categoriesP.innerHTML = '<b>Categories:</b> ';
+                categoriesP.appendChild(document.createTextNode(abuseData.data?.category?.join(", ") || 'N/A'));
+                resultDiv.appendChild(categoriesP);
+
+                const countryP = document.createElement('p');
+                countryP.innerHTML = '<b>Country:</b> ';
+                countryP.appendChild(document.createTextNode(abuseData.data?.countryCode || 'N/A'));
+                resultDiv.appendChild(countryP);
+
+                const ispP = document.createElement('p');
+                ispP.innerHTML = '<b>ISP:</b> ';
+                ispP.appendChild(document.createTextNode(abuseData.data?.isp || 'N/A'));
+                resultDiv.appendChild(ispP);
+
+                const domainP = document.createElement('p');
+                domainP.innerHTML = '<b>Domain:</b> ';
+                domainP.appendChild(document.createTextNode(abuseData.data?.domain || 'N/A'));
+                resultDiv.appendChild(domainP);
             } catch (error) {
                 console.error(error);
-                resultDiv.innerHTML = "<p>Error fetching data from AbuseIPDB.</p>";
+                resultDiv.textContent = 'Error fetching data from AbuseIPDB.';
             }
         }
     </script>

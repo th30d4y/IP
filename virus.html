@@ -38,41 +38,99 @@
 <body>
     <h1>IP Reputation Checker - VirusTotal</h1>
     <input type="text" id="ipInput" placeholder="Enter IP Address">
-    <button onclick="checkVirusTotal()">Check VirusTotal</button>
+    <button type="button" id="checkVirusBtn">Check VirusTotal</button>
     <div class="result" id="result"></div>
 
     <script>
+        // IP address validation regex
+        const ipv4Regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+        const ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4})$/;
+
+        function isValidIP(ip) {
+            return ipv4Regex.test(ip) || ipv6Regex.test(ip);
+        }
+
+        document.getElementById("checkVirusBtn").addEventListener("click", checkVirusTotal);
+        document.getElementById("ipInput").addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                checkVirusTotal();
+            }
+        });
+
         async function checkVirusTotal() {
             const ip = document.getElementById("ipInput").value.trim();
             const resultDiv = document.getElementById("result");
 
+            // Client-side validation
             if (!ip) {
-                resultDiv.innerHTML = "<p>Please enter a valid IP address.</p>";
+                resultDiv.textContent = "Please enter an IP address.";
                 return;
             }
 
-            resultDiv.innerHTML = "<p>Checking VirusTotal...</p>";
+            if (!isValidIP(ip)) {
+                resultDiv.textContent = "Invalid IP address format. Please enter a valid IPv4 or IPv6 address.";
+                return;
+            }
+
+            if (ip.length > 45) {
+                resultDiv.textContent = "IP address is too long.";
+                return;
+            }
+
+            resultDiv.textContent = "Checking VirusTotal...";
 
             try {
-                const virusResponse = await fetch(`/api/virustotal?ip=${ip}`);
+                const virusResponse = await fetch(`/api/virustotal?ip=${encodeURIComponent(ip)}`);
+                
+                if (!virusResponse.ok) {
+                    const errorData = await virusResponse.json();
+                    resultDiv.textContent = errorData.error || "Error fetching data from VirusTotal.";
+                    return;
+                }
+
                 const virusData = await virusResponse.json();
 
-                resultDiv.innerHTML = `
-                    <h3>Results for IP: ${ip}</h3>
-                    <h4>VirusTotal</h4>
-                    <p><b>Reputation:</b> ${virusData.data?.attributes?.reputation || "N/A"}</p>
-                    <p><b>Network:</b> ${virusData.data?.attributes?.network || "N/A"}</p>
-                    <p><b>Last Analysis Stats:</b> ${
-                        virusData.data?.attributes?.last_analysis_stats
-                            ? JSON.stringify(virusData.data.attributes.last_analysis_stats)
-                            : "N/A"
-                    }</p>
-                    <p><b>Tags:</b> ${virusData.data?.attributes?.tags?.join(", ") || "N/A"}</p>
-                    <p><b>Whois:</b> ${virusData.data?.attributes?.whois || "N/A"}</p>
-                `;
+                resultDiv.innerHTML = ''; // Clear previous results
+
+                const title = document.createElement('h3');
+                title.textContent = `Results for IP: ${ip}`;
+                resultDiv.appendChild(title);
+
+                const virusHeader = document.createElement('h4');
+                virusHeader.textContent = 'VirusTotal';
+                resultDiv.appendChild(virusHeader);
+
+                const reputationP = document.createElement('p');
+                reputationP.innerHTML = '<b>Reputation:</b> ';
+                reputationP.appendChild(document.createTextNode(virusData.data?.attributes?.reputation || 'N/A'));
+                resultDiv.appendChild(reputationP);
+
+                const networkP = document.createElement('p');
+                networkP.innerHTML = '<b>Network:</b> ';
+                networkP.appendChild(document.createTextNode(virusData.data?.attributes?.network || 'N/A'));
+                resultDiv.appendChild(networkP);
+
+                const statsP = document.createElement('p');
+                statsP.innerHTML = '<b>Last Analysis Stats:</b> ';
+                statsP.appendChild(document.createTextNode(
+                    virusData.data?.attributes?.last_analysis_stats
+                        ? JSON.stringify(virusData.data.attributes.last_analysis_stats)
+                        : 'N/A'
+                ));
+                resultDiv.appendChild(statsP);
+
+                const tagsP = document.createElement('p');
+                tagsP.innerHTML = '<b>Tags:</b> ';
+                tagsP.appendChild(document.createTextNode(virusData.data?.attributes?.tags?.join(", ") || 'N/A'));
+                resultDiv.appendChild(tagsP);
+
+                const whoisP = document.createElement('p');
+                whoisP.innerHTML = '<b>Whois:</b> ';
+                whoisP.appendChild(document.createTextNode(virusData.data?.attributes?.whois || 'N/A'));
+                resultDiv.appendChild(whoisP);
             } catch (error) {
                 console.error(error);
-                resultDiv.innerHTML = "<p>Error fetching data from VirusTotal.</p>";
+                resultDiv.textContent = 'Error fetching data from VirusTotal.';
             }
         }
     </script>
