@@ -42,48 +42,74 @@
     <div class="result" id="result"></div>
 
     <script>
+        function addLabeledValue(container, label, value) {
+            const p = document.createElement("p");
+            const strong = document.createElement("b");
+            strong.textContent = `${label}: `;
+            p.appendChild(strong);
+            p.appendChild(document.createTextNode(value ?? "N/A"));
+            container.appendChild(p);
+        }
+
+        const MAX_IP_LENGTH = 45;
+
         async function checkBoth() {
             const ip = document.getElementById("ipInput").value.trim();
             const resultDiv = document.getElementById("result");
 
             if (!ip) {
-                resultDiv.innerHTML = "<p>Please enter a valid IP address.</p>";
+                resultDiv.textContent = "Please enter a valid IP address.";
                 return;
             }
 
-            resultDiv.innerHTML = "<p>Checking AbuseIPDB and VirusTotal...</p>";
+            if (ip.length > MAX_IP_LENGTH) {
+                resultDiv.textContent = "IP address is too long.";
+                return;
+            }
+
+            resultDiv.textContent = "Checking AbuseIPDB and VirusTotal...";
 
             try {
-                const abuseResponse = await fetch(`/api/abuseipdb?ip=${ip}`);
+                const abuseResponse = await fetch(`/api/abuseipdb?ip=${encodeURIComponent(ip)}`);
                 const abuseData = await abuseResponse.json();
 
-                const virusResponse = await fetch(`/api/virustotal?ip=${ip}`);
+                const virusResponse = await fetch(`/api/virustotal?ip=${encodeURIComponent(ip)}`);
                 const virusData = await virusResponse.json();
 
-                resultDiv.innerHTML = `
-                    <h3>Results for IP: ${ip}</h3>
+                resultDiv.textContent = "";
 
-                    <h4>AbuseIPDB</h4>
-                    <p><b>Abuse Confidence Score:</b> ${abuseData.data?.abuseConfidenceScore || "N/A"}</p>
-                    <p><b>Categories:</b> ${abuseData.data?.category?.join(", ") || "N/A"}</p>
-                    <p><b>Country:</b> ${abuseData.data?.countryCode || "N/A"}</p>
-                    <p><b>ISP:</b> ${abuseData.data?.isp || "N/A"}</p>
-                    <p><b>Domain:</b> ${abuseData.data?.domain || "N/A"}</p>
+                const title = document.createElement("h3");
+                title.textContent = `Results for IP: ${ip}`;
+                resultDiv.appendChild(title);
 
-                    <h4>VirusTotal</h4>
-                    <p><b>Reputation:</b> ${virusData.data?.attributes?.reputation || "N/A"}</p>
-                    <p><b>Network:</b> ${virusData.data?.attributes?.network || "N/A"}</p>
-                    <p><b>Last Analysis Stats:</b> ${
-                        virusData.data?.attributes?.last_analysis_stats
-                            ? JSON.stringify(virusData.data.attributes.last_analysis_stats)
-                            : "N/A"
-                    }</p>
-                    <p><b>Tags:</b> ${virusData.data?.attributes?.tags?.join(", ") || "N/A"}</p>
-                    <p><b>Whois:</b> ${virusData.data?.attributes?.whois || "N/A"}</p>
-                `;
+                const abuseHeader = document.createElement("h4");
+                abuseHeader.textContent = "AbuseIPDB";
+                resultDiv.appendChild(abuseHeader);
+
+                addLabeledValue(resultDiv, "Abuse Confidence Score", String(abuseData.data?.abuseConfidenceScore ?? "N/A"));
+                addLabeledValue(resultDiv, "Categories", abuseData.data?.category?.join(", ") ?? "N/A");
+                addLabeledValue(resultDiv, "Country", abuseData.data?.countryCode ?? "N/A");
+                addLabeledValue(resultDiv, "ISP", abuseData.data?.isp ?? "N/A");
+                addLabeledValue(resultDiv, "Domain", abuseData.data?.domain ?? "N/A");
+
+                const virusHeader = document.createElement("h4");
+                virusHeader.textContent = "VirusTotal";
+                resultDiv.appendChild(virusHeader);
+
+                addLabeledValue(resultDiv, "Reputation", String(virusData.data?.attributes?.reputation ?? "N/A"));
+                addLabeledValue(resultDiv, "Network", virusData.data?.attributes?.network ?? "N/A");
+                addLabeledValue(
+                    resultDiv,
+                    "Last Analysis Stats",
+                    virusData.data?.attributes?.last_analysis_stats
+                        ? JSON.stringify(virusData.data.attributes.last_analysis_stats)
+                        : "N/A"
+                );
+                addLabeledValue(resultDiv, "Tags", virusData.data?.attributes?.tags?.join(", ") ?? "N/A");
+                addLabeledValue(resultDiv, "Whois", virusData.data?.attributes?.whois ?? "N/A");
             } catch (error) {
                 console.error(error);
-                resultDiv.innerHTML = "<p>Error fetching data from both services.</p>";
+                resultDiv.textContent = "Error fetching data from both services.";
             }
         }
     </script>

@@ -90,7 +90,7 @@
 
                 const abuseData = await abuseResponse.json();
 
-                resultDiv.innerHTML = ''; // Clear previous results
+                resultDiv.textContent = ""; // Clear previous results
 
                 const title = document.createElement('h3');
                 title.textContent = `Results for IP: ${ip}`;
@@ -100,30 +100,20 @@
                 abuseHeader.textContent = 'AbuseIPDB';
                 resultDiv.appendChild(abuseHeader);
 
-                const scoreP = document.createElement('p');
-                scoreP.innerHTML = '<b>Abuse Confidence Score:</b> ';
-                scoreP.appendChild(document.createTextNode(abuseData.data?.abuseConfidenceScore || 'N/A'));
-                resultDiv.appendChild(scoreP);
+                const addLabeledValue = (label, value) => {
+                    const p = document.createElement("p");
+                    const strong = document.createElement("b");
+                    strong.textContent = `${label}: `;
+                    p.appendChild(strong);
+                    p.appendChild(document.createTextNode(value ?? "N/A"));
+                    resultDiv.appendChild(p);
+                };
 
-                const categoriesP = document.createElement('p');
-                categoriesP.innerHTML = '<b>Categories:</b> ';
-                categoriesP.appendChild(document.createTextNode(abuseData.data?.category?.join(", ") || 'N/A'));
-                resultDiv.appendChild(categoriesP);
-
-                const countryP = document.createElement('p');
-                countryP.innerHTML = '<b>Country:</b> ';
-                countryP.appendChild(document.createTextNode(abuseData.data?.countryCode || 'N/A'));
-                resultDiv.appendChild(countryP);
-
-                const ispP = document.createElement('p');
-                ispP.innerHTML = '<b>ISP:</b> ';
-                ispP.appendChild(document.createTextNode(abuseData.data?.isp || 'N/A'));
-                resultDiv.appendChild(ispP);
-
-                const domainP = document.createElement('p');
-                domainP.innerHTML = '<b>Domain:</b> ';
-                domainP.appendChild(document.createTextNode(abuseData.data?.domain || 'N/A'));
-                resultDiv.appendChild(domainP);
+                addLabeledValue("Abuse Confidence Score", String(abuseData.data?.abuseConfidenceScore ?? "N/A"));
+                addLabeledValue("Categories", abuseData.data?.category?.join(", ") ?? "N/A");
+                addLabeledValue("Country", abuseData.data?.countryCode ?? "N/A");
+                addLabeledValue("ISP", abuseData.data?.isp ?? "N/A");
+                addLabeledValue("Domain", abuseData.data?.domain ?? "N/A");
             } catch (error) {
                 console.error(error);
                 resultDiv.textContent = 'Error fetching data from AbuseIPDB.';

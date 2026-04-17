@@ -276,5 +276,6 @@ curl -I http://localhost:3000
 
 ---
 
+**Release:** 2.0.1 (bugfix)  
 **Last Updated:** April 17, 2026  
 **Status:** All vulnerabilities patched and tested

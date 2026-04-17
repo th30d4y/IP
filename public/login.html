@@ -90,7 +90,7 @@
           const messageDiv = document.getElementById(divId);
           messageDiv.style.color = isError ? "red" : "green";
           messageDiv.style.display = "block";
-          messageDiv.innerHTML = message;
+          messageDiv.textContent = message;
           setTimeout(() => {
               messageDiv.style.display = "none";
           }, 5000);
