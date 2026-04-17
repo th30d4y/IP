@@ -51,6 +51,8 @@
             container.appendChild(p);
         }
 
+        const MAX_IP_LENGTH = 45;
+
         async function checkBoth() {
             const ip = document.getElementById("ipInput").value.trim();
             const resultDiv = document.getElementById("result");
@@ -60,7 +62,7 @@
                 return;
             }
 
-            if (ip.length > 45) {
+            if (ip.length > MAX_IP_LENGTH) {
                 resultDiv.textContent = "IP address is too long.";
                 return;
             }
