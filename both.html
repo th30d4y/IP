@@ -42,13 +42,6 @@
     <div class="result" id="result"></div>
 
     <script>
-        const ipv4Regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-        const ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4})$/;
-
-        function isValidIP(ip) {
-            return ipv4Regex.test(ip) || ipv6Regex.test(ip);
-        }
-
         function addLabeledValue(container, label, value) {
             const p = document.createElement("p");
             const strong = document.createElement("b");
@@ -64,11 +57,6 @@
 
             if (!ip) {
                 resultDiv.textContent = "Please enter a valid IP address.";
-                return;
-            }
-
-            if (!isValidIP(ip)) {
-                resultDiv.textContent = "Invalid IP address format. Please enter a valid IPv4 or IPv6 address.";
                 return;
             }
 
