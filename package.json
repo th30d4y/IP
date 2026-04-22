@@ -1,5 +1,5 @@
 {
-  "name": "@w4nn4d13/ip",
+  "name": "@th30d4y/ip",
   "version": "2.0.1",
   "description": "",
   "main": "server.js",
@@ -10,6 +10,13 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/th30d4y/IP.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "dependencies": {
     "express": "^4.21.2",
     "firebase": "^11.2.0",
